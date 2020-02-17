@@ -12,7 +12,7 @@ If you already have some of these services like rabbitmq provided by your enterp
 you can remove them from the compose file and use environment variables to override the values in the app.
 
 ## How do I deploy resolute-hub
-just run the [docker-compose.yml]() file on your command line. The hub will be up and running.
+just run the [docker-compose.yml](docker-compose.yml) file on your command line. The hub will be up and running.
 
 ## Documentation.
 

@@ -1,8 +1,10 @@
 package com.resolute.hub.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.resolute.hub.models.NodeResource;
 import com.resolute.hub.models.PendingTestResult;
 import com.resolute.hub.models.RunResource;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -32,16 +34,19 @@ public class RunnerService {
 
     public PendingTestResult publish (RunResource runResource) throws Exception{
         String correlationId = UUID.randomUUID().toString();
-        rabbitTemplate.send(exchange,requestQueueName, getMessage(runResource, correlationId));
+        ModelMapper modelMapper = new ModelMapper();
+        NodeResource nodeResource = modelMapper.map(runResource, NodeResource.class);
+        nodeResource.setId(correlationId);
+        rabbitTemplate.send(exchange,requestQueueName, getMessage(nodeResource, correlationId));
         log.info("Message published to queue "+requestQueueName+". Correlation Id is " + correlationId +" for "+runResource.getAutAppName() + " app");
         return new PendingTestResult(correlationId);
     }
 
-    private Message getMessage(RunResource runResource, String correlationId) throws Exception{
+    private Message getMessage(NodeResource nodeResource, String correlationId) throws Exception{
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setCorrelationId(correlationId);
         this.objectMapper = new ObjectMapper();
-        Message message = new Message(objectMapper.writeValueAsBytes(runResource), messageProperties);
+        Message message = new Message(objectMapper.writeValueAsBytes(nodeResource), messageProperties);
         return message;
     }
 
